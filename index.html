@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>แบบประเมินความพึงพอใจ</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    body {
+      background-color: #f6f9f8;
+      font-family: 'Prompt', sans-serif;
+    }
+    .rating-stars i {
+      font-size: 2rem;
+      color: #ccc;
+      cursor: pointer;
+    }
+    .rating-stars i.active {
+      color: #ffc107;
+    }
+    .logo {
+      max-width: 80px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <div class="text-center mb-3">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Seal_of_Rajabhat_University_System.svg/1200px-Seal_of_Rajabhat_University_System.svg.png" alt="logo" class="logo mb-2">
+      <h4 class="fw-bold">🙋‍♀️ คุณพึงพอใจกับการบริการครั้งนี้แค่ไหน?</h4>
+    </div>
+
+    <form id="ratingForm">
+      <div class="mb-3 text-center rating-stars">
+        <input type="hidden" name="score" id="score">
+        <i class="bi bi-star" data-value="1"></i>
+        <i class="bi bi-star" data-value="2"></i>
+        <i class="bi bi-star" data-value="3"></i>
+        <i class="bi bi-star" data-value="4"></i>
+        <i class="bi bi-star" data-value="5"></i>
+      </div>
+
+      <div class="mb-3">
+        <label for="comment" class="form-label">✍️ ความคิดเห็นเพิ่มเติม (ไม่จำเป็นต้องกรอก)</label>
+        <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
+      </div>
+
+      <input type="hidden" id="ticketId" name="ticketId">
+
+      <div class="d-grid">
+        <button type="submit" class="btn btn-success">✅ ส่งแบบประเมิน</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.js"></script>
+  <script>
+    const stars = document.querySelectorAll('.rating-stars i');
+    const scoreInput = document.getElementById('score');
+
+    stars.forEach(star => {
+      star.addEventListener('click', () => {
+        const value = star.getAttribute('data-value');
+        scoreInput.value = value;
+        stars.forEach(s => s.classList.remove('active'));
+        for (let i = 0; i < value; i++) {
+          stars[i].classList.add('active');
+        }
+      });
+    });
+
+    // อ่าน ticketId จาก query string เช่น ?ticketId=REP250817-1201
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("ticketId")) {
+      document.getElementById("ticketId").value = params.get("ticketId");
+    }
+
+    document.getElementById('ratingForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      if (!scoreInput.value) {
+        Swal.fire("โปรดให้คะแนนก่อนส่งแบบประเมิน");
+        return;
+      }
+
+      const formData = new FormData(this);
+      const plainData = Object.fromEntries(formData.entries());
+
+      try {
+        const res = await fetch("https://script.google.com/macros/s/AKfycbzflGOWGD9celel7d-ayrx0q5xQcFQsnr2qL2rVQnPC-9s-jl0ONijxNzYiIjGszKFJyg/exec", {
+          method: "POST",
+          body: JSON.stringify(plainData),
+          headers: { "Content-Type": "application/json" }
+        });
+
+        const result = await res.json();
+        if (result.success) {
+          Swal.fire("ส่งแบบประเมินเรียบร้อยแล้ว ขอบคุณครับ 🙏").then(() => {
+            window.location.href = "https://liff.line.me/2007495650-QYp0MBBk";
+          });
+        } else {
+          Swal.fire("เกิดข้อผิดพลาด กรุณาลองใหม่");
+        }
+      } catch (err) {
+        console.error(err);
+        Swal.fire("ไม่สามารถส่งข้อมูลได้ กรุณาตรวจสอบการเชื่อมต่อ");
+      }
+    });
+  </script>
+</body>
+</html>
