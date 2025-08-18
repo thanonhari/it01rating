@@ -1,112 +1,192 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>แบบประเมินความพึงพอใจ</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <style>
-    body {
-      background-color: #f6f9f8;
-      font-family: 'Prompt', sans-serif;
-    }
-    .rating-stars i {
-      font-size: 2rem;
-      color: #ccc;
-      cursor: pointer;
-    }
-    .rating-stars i.active {
-      color: #ffc107;
-    }
-    .logo {
-      max-width: 80px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แบบประเมินความพึงพอใจ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Sarabun', sans-serif;
+        }
+        .card-header {
+            background-color: #00B900;
+            color: white;
+        }
+        .star-rating {
+            display: flex;
+            justify-content: center;
+            flex-direction: row-reverse;
+        }
+        .star-rating input[type="radio"] { display: none; }
+        .star-rating label {
+            font-size: 2.5rem;
+            color: #ddd;
+            cursor: pointer;
+            transition: color 0.2s;
+            padding: 0 0.25rem;
+        }
+        .star-rating input[type="radio"]:checked ~ label,
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+            color: #ffc107;
+        }
+        .logo { max-width: 60px; }
+        .summary-box { background-color: #f8f9fa; border-left: 4px solid #00B900; }
+    </style>
 </head>
 <body>
-  <div class="container py-4">
-    <div class="text-center mb-3">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Seal_of_Rajabhat_University_System.svg/1200px-Seal_of_Rajabhat_University_System.svg.png" alt="logo" class="logo mb-2">
-      <h4 class="fw-bold">🙋‍♀️ คุณพึงพอใจกับการบริการครั้งนี้แค่ไหน?</h4>
+
+    <div id="loading" class="d-flex justify-content-center align-items-center vh-100">
+        <div class="spinner-border text-success" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
     </div>
 
-    <form id="ratingForm">
-      <div class="mb-3 text-center rating-stars">
-        <input type="hidden" name="score" id="score">
-        <i class="bi bi-star" data-value="1"></i>
-        <i class="bi bi-star" data-value="2"></i>
-        <i class="bi bi-star" data-value="3"></i>
-        <i class="bi bi-star" data-value="4"></i>
-        <i class="bi bi-star" data-value="5"></i>
-      </div>
+    <div id="app" class="container py-3 d-none">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
 
-      <div class="mb-3">
-        <label for="comment" class="form-label">✍️ ความคิดเห็นเพิ่มเติม (ไม่จำเป็นต้องกรอก)</label>
-        <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
-      </div>
+                <div id="feedback-done" class="text-center py-5 d-none">
+                    <h1 class="h3 fw-bold text-success mb-2">ขอบคุณครับ 🙏</h1>
+                    <p class="text-muted">เราได้รับผลการประเมินของท่านแล้ว</p>
+                    <p class="text-muted small mt-4">หน้าต่างนี้จะปิดในอีก 5 วินาที...</p>
+                </div>
 
-      <input type="hidden" id="ticketId" name="ticketId">
+                <div id="feedback-form">
+                    <div class="text-center mb-4">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Seal_of_Rajabhat_University_System.svg/1200px-Seal_of_Rajabhat_University_System.svg.png" alt="Logo" class="logo mx-auto mb-2">
+                        <h1 class="h4 fw-bold">ประเมินความพึงพอใจ</h1>
+                    </div>
+                    
+                    <div class="summary-box p-3 mb-4 rounded">
+                        <p class="mb-1 small"><strong>Ticket ID:</strong> <span id="ticketId">-</span></p>
+                        <p class="mb-1 small"><strong>ผู้ดำเนินการ:</strong> <span id="operator">-</span></p>
+                        <p class="mb-0 small"><strong>สรุปการแก้ไข:</strong> <span id="solution">-</span></p>
+                    </div>
 
-      <div class="d-grid">
-        <button type="submit" class="btn btn-success">✅ ส่งแบบประเมิน</button>
-      </div>
-    </form>
-  </div>
+                    <form id="ratingForm">
+                        <input type="hidden" id="formTicketId" name="ticketId">
+                        
+                        <div class="mb-4">
+                            <h2 class="h6 fw-semibold text-center text-secondary mb-2">โปรดให้คะแนนการบริการ</h2>
+                            <div class="star-rating">
+                                <input type="radio" id="star5" name="rating" value="5" required><label for="star5" title="5 stars">★</label>
+                                <input type="radio" id="star4" name="rating" value="4"><label for="star4" title="4 stars">★</label>
+                                <input type="radio" id="star3" name="rating" value="3"><label for="star3" title="3 stars">★</label>
+                                <input type="radio" id="star2" name="rating" value="2"><label for="star2" title="2 stars">★</label>
+                                <input type="radio" id="star1" name="rating" value="1"><label for="star1" title="1 star">★</label>
+                            </div>
+                        </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.js"></script>
-  <script>
-    const stars = document.querySelectorAll('.rating-stars i');
-    const scoreInput = document.getElementById('score');
+                        <div class="mb-4">
+                            <label for="comment" class="form-label fw-semibold text-secondary">ข้อเสนอแนะเพิ่มเติม (ถ้ามี)</label>
+                            <textarea id="comment" name="comment" rows="3" class="form-control"></textarea>
+                        </div>
 
-    stars.forEach(star => {
-      star.addEventListener('click', () => {
-        const value = star.getAttribute('data-value');
-        scoreInput.value = value;
-        stars.forEach(s => s.classList.remove('active'));
-        for (let i = 0; i < value; i++) {
-          stars[i].classList.add('active');
-        }
-      });
-    });
+                        <div class="d-grid">
+                            <button type="submit" id="submitBtn" class="btn btn-success btn-lg">ส่งแบบประเมิน</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    // อ่าน ticketId จาก query string เช่น ?ticketId=REP250817-1201
-    const params = new URLSearchParams(window.location.search);
-    if (params.has("ticketId")) {
-      document.getElementById("ticketId").value = params.get("ticketId");
-    }
+    <script>
+        const LIFF_ID = "2007495650-QYp0MBBk"; // 👈 เดี๋ยวเราจะมาใส่ค่าตรงนี้กัน
 
-    document.getElementById('ratingForm').addEventListener('submit', async function (e) {
-      e.preventDefault();
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await liff.init({ liffId: LIFF_ID });
+                if (!liff.isInClient()) {
+                   document.getElementById('loading').innerHTML = '<p class="text-danger">กรุณาเปิดหน้านี้ผ่านแอปพลิเคชัน LINE</p>';
+                   return;
+                }
 
-      if (!scoreInput.value) {
-        Swal.fire("โปรดให้คะแนนก่อนส่งแบบประเมิน");
-        return;
-      }
+                const urlParams = new URLSearchParams(window.location.search);
+                const ticketId = urlParams.get('ticketId');
+                if (!ticketId) {
+                   document.getElementById('loading').innerHTML = '<p class="text-danger">ไม่พบรหัสใบงาน (Ticket ID)</p>';
+                   return;
+                }
+                
+                google.script.run
+                    .withSuccessHandler(response => {
+                        if (response.error) {
+                            Swal.fire('เกิดข้อผิดพลาด', response.error, 'error');
+                            return;
+                        }
 
-      const formData = new FormData(this);
-      const plainData = Object.fromEntries(formData.entries());
+                        if (response.alreadyRated) {
+                            document.getElementById('loading').classList.add('d-none');
+                            document.getElementById('app').classList.remove('d-none');
+                            document.getElementById('feedback-form').classList.add('d-none');
+                            document.getElementById('feedback-done').classList.remove('d-none');
+                            setTimeout(() => liff.closeWindow(), 5000);
+                        } else {
+                            document.getElementById('ticketId').innerText = response.ticketId || '-';
+                            document.getElementById('operator').innerText = response.operator || '-';
+                            document.getElementById('solution').innerText = response.solution || '-';
+                            document.getElementById('formTicketId').value = response.ticketId;
+                            
+                            document.getElementById('loading').classList.add('d-none');
+                            document.getElementById('app').classList.remove('d-none');
+                        }
+                    })
+                    .withFailureHandler(err => Swal.fire('เกิดข้อผิดพลาด', `ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้: ${err.message}`, 'error'))
+                    .getFeedbackData(ticketId);
 
-      try {
-        const res = await fetch("https://script.google.com/macros/s/AKfycbzflGOWGD9celel7d-ayrx0q5xQcFQsnr2qL2rVQnPC-9s-jl0ONijxNzYiIjGszKFJyg/exec", {
-          method: "POST",
-          body: JSON.stringify(plainData),
-          headers: { "Content-Type": "application/json" }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loading').innerHTML = `<p class="text-danger">ไม่สามารถเริ่มต้น LIFF ได้: ${err.message}</p>`;
+            }
         });
 
-        const result = await res.json();
-        if (result.success) {
-          Swal.fire("ส่งแบบประเมินเรียบร้อยแล้ว ขอบคุณครับ 🙏").then(() => {
-            window.location.href = "https://liff.line.me/2007495650-QYp0MBBk";
-          });
-        } else {
-          Swal.fire("เกิดข้อผิดพลาด กรุณาลองใหม่");
-        }
-      } catch (err) {
-        console.error(err);
-        Swal.fire("ไม่สามารถส่งข้อมูลได้ กรุณาตรวจสอบการเชื่อมต่อ");
-      }
-    });
-  </script>
+        document.getElementById('ratingForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const ratingValue = document.querySelector('input[name="rating"]:checked');
+            if (!ratingValue) {
+                Swal.fire({ icon: 'warning', title: 'โปรดให้คะแนน', text: 'กรุณาให้คะแนนโดยการแตะที่ดาว' });
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> กำลังส่ง...';
+
+            const formData = new FormData(e.target);
+            const feedbackData = Object.fromEntries(formData.entries());
+
+            google.script.run
+                .withSuccessHandler(response => {
+                    if(response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'ส่งข้อมูลสำเร็จ!',
+                            text: 'ขอบคุณสำหรับความคิดเห็นครับ',
+                            showConfirmButton: false,
+                            timer: 2000
+                        }).then(() => liff.closeWindow());
+                    } else {
+                        Swal.fire('เกิดข้อผิดพลาด', response.message, 'error');
+                        submitBtn.disabled = false;
+                        submitBtn.innerText = 'ส่งแบบประเมิน';
+                    }
+                })
+                .withFailureHandler(err => {
+                    Swal.fire('เกิดข้อผิดพลาด', `ไม่สามารถเชื่อมต่อได้: ${err.message}`, 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = 'ส่งแบบประเมิน';
+                })
+                .saveFeedback(feedbackData);
+        });
+    </script>
 </body>
 </html>
