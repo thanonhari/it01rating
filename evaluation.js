@@ -82,6 +82,14 @@ document.getElementById('evaluationForm').addEventListener('submit', async funct
         
         document.getElementById('evaluationForm').classList.add('hidden');
         document.getElementById('thankYouMessage').classList.remove('hidden');
+                // --- ✨ ส่วนที่เพิ่มเข้ามาใหม่ ✨ ---
+        // หน่วงเวลา 2.5 วินาที (2500 มิลลิวินาที) แล้วสั่งปิดหน้าต่าง LIFF
+        setTimeout(() => {
+            if (liff.isInClient()) {
+                liff.closeWindow();
+            }
+        }, 2500);
+        // --- สิ้นสุดส่วนที่เพิ่ม ---
 
     } catch (error) {
         Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้: ' + error.message, 'error');
