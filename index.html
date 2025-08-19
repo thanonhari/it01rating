@@ -1,91 +1,75 @@
-// ==========================================================
-// == ✨ กรุณาแก้ไขค่า 2 บรรทัดนี้ ✨ ==
-// ==========================================================
-const LIFF_ID = "2007495650-QYp0MBBk"; // LIFF ID ของหน้าประเมินที่คุณสร้างใหม่
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby02fO2_GgLEWJif2dYzF9wKK1f9SDiRxXGPuCshwIdwx-e4MZj2227RZ8-fSJCZm46GQ/execL"; // URL ของ Web App ที่ได้จากการ Deploy
-// ==========================================================
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ประเมินความพึงพอใจ</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        /* เพิ่มฟอนต์ที่สวยงามและสไตล์ที่จำเป็น */
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+        .star-rating label { color: #ddd; cursor: pointer; font-size: 2.5rem; transition: color 0.2s; }
+        .star-rating input:checked ~ label,
+        .star-rating label:hover,
+        .star-rating label:hover ~ label { color: #f5b301; }
+        .star-rating input { display: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner { display: inline-block; width: 50px; height: 50px; border: 3px solid rgba(0,0,0,0.1); border-radius: 50%; border-top-color: #2c7744; animation: spin 1s ease-in-out infinite; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="app-container" class="min-h-screen p-4 md:p-8">
+        <div id="loading" class="text-center py-10">
+            <div class="spinner"></div>
+            <p class="mt-4 text-gray-600">กำลังโหลดข้อมูล...</p>
+        </div>
 
-document.addEventListener("DOMContentLoaded", async () => {
-    const loadingDiv = document.getElementById('loading');
-    const formDiv = document.getElementById('evaluationForm');
-    const thankYouDiv = document.getElementById('thankYouMessage');
+        <div id="thankYouMessage" class="hidden text-center py-10">
+            <i class="fas fa-check-circle text-6xl text-green-500 mb-4"></i>
+            <h1 class="text-2xl font-bold" style="color: #2c7744;">ขอบคุณสำหรับความคิดเห็น!</h1>
+            <p class="mt-2 text-gray-600">เราได้บันทึกข้อมูลการประเมินของท่านเรียบร้อยแล้ว</p>
+        </div>
 
-    try {
-        await liff.init({ liffId: LIFF_ID });
-        if (!liff.isInClient()) {
-            loadingDiv.innerHTML = '<p class="text-red-500 font-bold text-center">กรุณาเปิดหน้านี้ผ่านแอปพลิเคชัน LINE</p>';
-            return;
-        }
+        <form id="evaluationForm" class="hidden max-w-2xl mx-auto">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="mb-6">
+                    <h1 class="text-2xl font-bold text-center mb-6" style="color: #2c7744;">ประเมินความพึงพอใจการบริการ</h1>
+                    <div class="bg-gray-100 border rounded-lg p-4 text-sm">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
+                            <div><span class="text-gray-500">รหัส:</span> <strong id="info-ticketId" class="text-gray-900">...</strong></div>
+                            <div><span class="text-gray-500">อุปกรณ์:</span> <strong id="info-equipmentName" class="text-gray-900">...</strong></div>
+                            <div class="col-span-full"><span class="text-gray-500">ผู้ดำเนินการ:</span> <strong id="info-operator" class="text-gray-900">...</strong></div>
+                        </div>
+                    </div>
+                </div>
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const ticketId = urlParams.get('ticketId');
-        if (!ticketId) throw new Error("ไม่พบรหัสใบแจ้งซ่อม");
+                <div class="space-y-6">
+                    <div>
+                        <label class="font-semibold text-gray-700">1. โดยรวมแล้ว ท่านพึงพอใจกับการบริการในครั้งนี้เพียงใด?</label>
+                        <div class="star-rating flex flex-row-reverse justify-end mt-2">
+                            <input type="radio" id="overall-5" name="overall" value="5" required><label for="overall-5">★</label>
+                            <input type="radio" id="overall-4" name="overall" value="4"><label for="overall-4">★</label>
+                            <input type="radio" id="overall-3" name="overall" value="3"><label for="overall-3">★</label>
+                            <input type="radio" id="overall-2" name="overall" value="2"><label for="overall-2">★</label>
+                            <input type="radio" id="overall-1" name="overall" value="1"><label for="overall-1">★</label>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="font-semibold text-gray-700">2. ท่านมีข้อเสนอแนะเพิ่มเติม หรือคำชมเชยหรือไม่?</label>
+                        <textarea id="feedback-comments" name="comments" rows="4" class="w-full mt-2 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="(ไม่บังคับ) พิมพ์ความคิดเห็นของคุณที่นี่..."></textarea>
+                    </div>
+                </div>
 
-        // เรียก API จาก Google Apps Script เพื่อดึงข้อมูลและสถานะการประเมิน
-        const response = await fetch(`${SCRIPT_URL}?action=getEvaluationData&ticketId=${ticketId}`);
-        const data = await response.json();
-
-        if (data.error) throw new Error(data.error);
-
-        // ตรวจสอบว่าเคยประเมินแล้วหรือไม่
-        if (data.alreadyEvaluated) {
-            loadingDiv.classList.add('hidden');
-            thankYouDiv.classList.remove('hidden');
-        } else {
-            populateForm(data.repairData);
-            loadingDiv.classList.add('hidden');
-            formDiv.classList.remove('hidden');
-        }
-
-    } catch (error) {
-        console.error("Error:", error);
-        loadingDiv.innerHTML = `<p class="text-red-500 font-bold text-center">เกิดข้อผิดพลาด: ${error.message}</p>`;
-    }
-});
-
-function populateForm(data) {
-    if (!data) throw new Error("ไม่พบข้อมูลงานซ่อม");
-    document.getElementById('info-ticketId').textContent = data['รหัสใบแจ้งซ่อม'] || 'N/A';
-    document.getElementById('info-equipmentName').textContent = data['ชื่อครุภัณฑ์'] || 'N/A';
-    document.getElementById('info-operator').textContent = data['ผู้ปฏิบัติงาน'] || 'N/A';
-}
-
-document.getElementById('evaluationForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const submitBtn = document.getElementById('submitBtn');
-    
-    // ตรวจสอบว่าผู้ใช้ให้คะแนนดาวแล้วหรือยัง
-    const overallScore = this.elements['overall'].value;
-    if (!overallScore) {
-        Swal.fire('กรุณาให้คะแนน', 'โปรดให้คะแนนความพึงพอใจโดยรวมก่อนส่งแบบประเมิน', 'warning');
-        return;
-    }
-
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>กำลังส่ง...';
-
-    const evaluationData = {
-        ticketId: new URLSearchParams(window.location.search).get('ticketId'),
-        overallScore: parseInt(overallScore),
-        comments: this.elements['comments'].value.trim()
-    };
-
-    try {
-        // ส่งข้อมูลกลับไปที่ Google Apps Script ผ่าน POST request
-        const response = await fetch(`${SCRIPT_URL}?action=submitEvaluation`, {
-            method: 'POST',
-            body: JSON.stringify(evaluationData),
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // ใช้ text/plain สำหรับ Apps Script
-        });
-        const result = await response.json();
-        if (!result.success) throw new Error(result.message || 'Unknown error');
-        
-        document.getElementById('evaluationForm').classList.add('hidden');
-        document.getElementById('thankYouMessage').classList.remove('hidden');
-
-    } catch (error) {
-        Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้: ' + error.message, 'error');
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'ส่งแบบประเมิน';
-    }
-});
+                <div class="mt-8">
+                    <button type="submit" id="submitBtn" class="w-full text-white font-bold py-3 px-4 rounded-lg transition-colors" style="background-color: #2c7744;" onmouseover="this.style.backgroundColor='#1e5631'" onmouseout="this.style.backgroundColor='#2c7744'">ส่งแบบประเมิน</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <script src="evaluation.js"></script>
+</body>
+</html>
