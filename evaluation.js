@@ -75,43 +75,13 @@ document.getElementById('evaluationForm').addEventListener('submit', async funct
         const response = await fetch(`${SCRIPT_URL}?action=submitEvaluation`, {
             method: 'POST',
             body: JSON.stringify(evaluationData),
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // ใช้ text/plain สำหรับ Apps Script
-        });
-        const result = await response.json();
-        if (!result.success) throw new Error(result.message || 'Unknown error');
-        
-        document.getElementById('evaluationForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const submitBtn = document.getElementById('submitBtn');
-    
-    // ตรวจสอบว่าผู้ใช้ให้คะแนนดาวแล้วหรือยัง
-    const overallScore = this.elements['overall'].value;
-    if (!overallScore) {
-        Swal.fire('กรุณาให้คะแนน', 'โปรดให้คะแนนความพึงพอใจโดยรวมก่อนส่งแบบประเมิน', 'warning');
-        return;
-    }
-
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>กำลังส่ง...';
-
-    const evaluationData = {
-        ticketId: new URLSearchParams(window.location.search).get('ticketId'),
-        overallScore: parseInt(overallScore),
-        comments: this.elements['comments'].value.trim()
-    };
-
-    try {
-        // ส่งข้อมูลกลับไปที่ Google Apps Script ผ่าน POST request
-        const response = await fetch(`${SCRIPT_URL}?action=submitEvaluation`, {
-            method: 'POST',
-            body: JSON.stringify(evaluationData),
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         });
 
         const result = await response.json();
         if (!result.success) throw new Error(result.message || 'Unknown error');
         
-        // --- ✨ นี่คือส่วนที่ปรับปรุงใหม่ทั้งหมด ✨ ---
+        // --- ✨ ส่วนนี้คือโค้ดที่แก้ไขแล้วและทำงานได้ถูกต้อง ✨ ---
         
         // ซ่อนฟอร์มทิ้งไปเลย
         document.getElementById('evaluationForm').classList.add('hidden');
@@ -130,14 +100,7 @@ document.getElementById('evaluationForm').addEventListener('submit', async funct
                 liff.closeWindow();
             }
         });
-        // --- สิ้นสุดส่วนที่ปรับปรุง ---
-
-    } catch (error) {
-        Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้: ' + error.message, 'error');
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'ส่งแบบประเมิน';
-    }
-});
+        // --- สิ้นสุดส่วนที่แก้ไข ---
 
     } catch (error) {
         Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้: ' + error.message, 'error');
