@@ -80,16 +80,64 @@ document.getElementById('evaluationForm').addEventListener('submit', async funct
         const result = await response.json();
         if (!result.success) throw new Error(result.message || 'Unknown error');
         
+        document.getElementById('evaluationForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const submitBtn = document.getElementById('submitBtn');
+    
+    // ตรวจสอบว่าผู้ใช้ให้คะแนนดาวแล้วหรือยัง
+    const overallScore = this.elements['overall'].value;
+    if (!overallScore) {
+        Swal.fire('กรุณาให้คะแนน', 'โปรดให้คะแนนความพึงพอใจโดยรวมก่อนส่งแบบประเมิน', 'warning');
+        return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>กำลังส่ง...';
+
+    const evaluationData = {
+        ticketId: new URLSearchParams(window.location.search).get('ticketId'),
+        overallScore: parseInt(overallScore),
+        comments: this.elements['comments'].value.trim()
+    };
+
+    try {
+        // ส่งข้อมูลกลับไปที่ Google Apps Script ผ่าน POST request
+        const response = await fetch(`${SCRIPT_URL}?action=submitEvaluation`, {
+            method: 'POST',
+            body: JSON.stringify(evaluationData),
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        });
+
+        const result = await response.json();
+        if (!result.success) throw new Error(result.message || 'Unknown error');
+        
+        // --- ✨ นี่คือส่วนที่ปรับปรุงใหม่ทั้งหมด ✨ ---
+        
+        // ซ่อนฟอร์มทิ้งไปเลย
         document.getElementById('evaluationForm').classList.add('hidden');
-        document.getElementById('thankYouMessage').classList.remove('hidden');
-                // --- ✨ ส่วนที่เพิ่มเข้ามาใหม่ ✨ ---
-        // หน่วงเวลา 2.5 วินาที (2500 มิลลิวินาที) แล้วสั่งปิดหน้าต่าง LIFF
-        setTimeout(() => {
+
+        // แสดงข้อความขอบคุณด้วย SweetAlert พร้อมตั้งเวลาปิด
+        Swal.fire({
+            icon: 'success',
+            title: 'ขอบคุณสำหรับความคิดเห็น!',
+            text: 'เราได้บันทึกข้อมูลของท่านเรียบร้อยแล้ว',
+            timer: 2500, // แสดงผล 2.5 วินาที
+            showConfirmButton: false, // ไม่ต้องมีปุ่ม OK
+            timerProgressBar: true,   // มีแถบเวลาวิ่งให้ดู
+        }).then(() => {
+            // หลังจากที่ SweetAlert ปิดตัวลง (ครบ 2.5 วิ) ให้สั่งปิดหน้าต่าง LIFF
             if (liff.isInClient()) {
                 liff.closeWindow();
             }
-        }, 2500);
-        // --- สิ้นสุดส่วนที่เพิ่ม ---
+        });
+        // --- สิ้นสุดส่วนที่ปรับปรุง ---
+
+    } catch (error) {
+        Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้: ' + error.message, 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'ส่งแบบประเมิน';
+    }
+});
 
     } catch (error) {
         Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้: ' + error.message, 'error');
