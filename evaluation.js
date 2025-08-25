@@ -5,6 +5,14 @@ const LIFF_ID = "2007495650-QYp0MBBk"; // LIFF ID ของหน้าประ
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby02fO2_GgLEWJif2dYzF9wKK1f9SDiRxXGPuCshwIdwx-e4MZj2227RZ8-fSJCZm46GQ/exec"; // URL ของ Web App ที่ได้จากการ Deploy
 // ==========================================================
 
+// =====================================================================
+// 🌟 ฟังก์ชันนี้ใช้สำหรับตรวจสอบว่าเคยประเมินไปแล้วหรือไม่ (frontend)
+// =====================================================================
+
+/**
+ * เรียกใช้เมื่อโหลดหน้าเว็บ เพื่อเช็คว่า ticketId เคยถูกประเมินหรือยัง
+ * ถ้าเคยประเมินแล้ว จะซ่อนฟอร์มและแสดงข้อความขอบคุณแทน
+ */
 document.addEventListener("DOMContentLoaded", async () => {
     const loadingDiv = document.getElementById('loading');
     const formDiv = document.getElementById('evaluationForm');
@@ -21,14 +29,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         const ticketId = urlParams.get('ticketId');
         if (!ticketId) throw new Error("ไม่พบรหัสใบแจ้งซ่อม");
 
-        // เรียก API จาก Google Apps Script เพื่อดึงข้อมูลและสถานะการประเมิน
+        // เรียก API จาก Google Apps Script เพื่อตรวจสอบการประเมิน
         const response = await fetch(`${SCRIPT_URL}?action=getEvaluationData&ticketId=${ticketId}`);
         const data = await response.json();
 
         if (data.error) throw new Error(data.error);
 
-        // ตรวจสอบว่าเคยประเมินแล้วหรือไม่
         if (data.alreadyEvaluated) {
+            // แสดงข้อความขอบคุณ หากเคยประเมินแล้ว
             loadingDiv.classList.add('hidden');
             thankYouDiv.classList.remove('hidden');
         } else {
@@ -42,6 +50,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         loadingDiv.innerHTML = `<p class="text-red-500 font-bold text-center">เกิดข้อผิดพลาด: ${error.message}</p>`;
     }
 });
+
 
 function populateForm(data) {
     if (!data) throw new Error("ไม่พบข้อมูลงานซ่อม");
