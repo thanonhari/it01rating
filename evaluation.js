@@ -63,7 +63,6 @@ document.getElementById('evaluationForm').addEventListener('submit', async funct
     e.preventDefault();
     const submitBtn = document.getElementById('submitBtn');
     
-    // ตรวจสอบว่าผู้ใช้ให้คะแนนดาวแล้วหรือยัง
     const overallScore = this.elements['overall'].value;
     if (!overallScore) {
         Swal.fire('กรุณาให้คะแนน', 'โปรดให้คะแนนความพึงพอใจโดยรวมก่อนส่งแบบประเมิน', 'warning');
@@ -80,9 +79,10 @@ document.getElementById('evaluationForm').addEventListener('submit', async funct
     };
 
     try {
-        // ส่งข้อมูลกลับไปที่ Google Apps Script ผ่าน POST request
         const response = await fetch(`${SCRIPT_URL}?action=submitEvaluation`, {
             method: 'POST',
+            // ✨ แก้ไข: ใช้ JSON.stringify สำหรับ body และกำหนด content-type เป็น text/plain
+            // ตามที่ Apps Script ต้องการเมื่อรับค่าจาก e.postData.contents
             body: JSON.stringify(evaluationData),
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         });
