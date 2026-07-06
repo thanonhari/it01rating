@@ -2,7 +2,8 @@
 // == ✨ กรุณาแก้ไขค่า 2 บรรทัดนี้ ✨ ==
 // ==========================================================
 const LIFF_ID = "2007495650-QYp0MBBk"; // LIFF ID ของหน้าประเมินที่คุณสร้างใหม่
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby02fO2_GgLEWJif2dYzF9wKK1f9SDiRxXGPuCshwIdwx-e4MZj2227RZ8-fSJCZm46GQ/exec"; // URL ของ Web App ที่ได้จากการ Deploy
+// const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby02fO2_GgLEWJif2dYzF9wKK1f9SDiRxXGPuCshwIdwx-e4MZj2227RZ8-fSJCZm46GQ/exec"; // URL ของ Web App ที่ได้จากการ Deploy
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxHU1DYhpooXajihbxyYys5leATd2K2q2xQuB77CpUOA76h3tDe94Z8e0Awop-Lgr0wAA/exec";
 // ==========================================================
 
 // =====================================================================
